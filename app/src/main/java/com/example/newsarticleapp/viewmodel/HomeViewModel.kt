@@ -24,9 +24,10 @@ class HomeViewModel : ViewModel() {
                 val response = repository.fetchArticleFromApi()
                 withContext(Dispatchers.Main) {
                     apiResponse.value = response
+                    Log.d("_prabhat", "callApi: $response")
                 }
             } catch (e: Exception) {
-                Log.d("_prabhat", "callApi: ${e.localizedMessage}")
+                Log.d("_prabhat", "callApi exception: ${e.localizedMessage}")
             }
         }
     }

@@ -1,24 +1,37 @@
 package com.example.newsarticleapp.ui
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.LayoutManager
 import com.example.newsarticleapp.R
+import com.example.newsarticleapp.adapter.ArticleAdapter
 import com.example.newsarticleapp.databinding.FragmentHomeBinding
+import com.example.newsarticleapp.model.News
+import com.example.newsarticleapp.viewmodel.HomeViewModel
 
 
 class HomeFragment : Fragment() {
 
     private lateinit var binding: FragmentHomeBinding
+    private lateinit var viewModel: HomeViewModel
+    private lateinit var recyclerView : RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        arguments?.let {
-
-        }
+        viewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
+        viewModel.callApi()
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -27,6 +40,37 @@ class HomeFragment : Fragment() {
         // Inflate the layout for this fragment
         binding =  FragmentHomeBinding.inflate(inflater, container, false)
         return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        recyclerView = binding.rvNewsList
+
+
+        viewModel.articleList.observe(viewLifecycleOwner, Observer { response ->
+            val newList : List<News> = response.articles.map {
+                News(it.title,it.description,it.urlToImage,it.url)
+            }
+            Log.d("_prabhat", "onCreate: $response")
+            recyclerView.adapter = ArticleAdapter(newList,requireContext() , ::loadWebView)
+            recyclerView.layoutManager = LinearLayoutManager(requireContext(),LinearLayoutManager.VERTICAL,false)
+            Log.d("_prabhat", "onCreate: $response")
+        })
+
+
+
+    }
+
+    private fun loadWebView(url:String){
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.setPackage("com.android.chrome")
+        startActivity(intent)
+//        val fragment = ArticleDetailFragment.newInstance(url)
+//        requireActivity().supportFragmentManager.beginTransaction().addToBackStack(null)
+//            .replace(R.id.container_view, fragment)
+//            .commit()
+
     }
 
     companion object {
